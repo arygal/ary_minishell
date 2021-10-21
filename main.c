@@ -159,11 +159,14 @@ bool parse_line(t_com *com, char *line)
 	while (*line)
 	{
 		size = get_size(line);
+		if (!size)
+			return(true);
 		line = add_arg(com, line, size);
 		if (!line)
 			return (error_proc(error_malloc));
 		line = trim_space(line);
 	}
+	return(true);
 }
 
 void free_snode(t_snode *head)
@@ -284,9 +287,11 @@ int alt_quote_skip(char *line)
 	ct = -1;
 	spec = *line;
 	++line;
+	if (*line == spec)
+		return(1);
 	while (line[++ct])
 		if (line[ct] == spec)
-			return(ct);
+			return(ct + 2);
 	return(1);
 }
 
@@ -416,7 +421,7 @@ int main(int argc, char **argv, char **envp)
 	(void)argv;
 
 	// char *test_line = "asd\"\\$USER ary\"test";
-	char *test_line = "\\$USER asd\"\\$USER  $ $USER\"test\'$USER asd hehe' $a $\\ asd $PATH";
+	char *test_line = "\\$USER asd\"\\$USER  $ $USER\"test\'$USER asd hehe' $a $\\ asd \"\" \'\'";
 	// len = 0;
 	// while (true)
 	line = ary_strdup(test_line);
@@ -438,8 +443,8 @@ int main(int argc, char **argv, char **envp)
 	// if (ret == -1)
 	// 	return (0);
 	parse_line(&com, line);
-	write(1, line, len);
-	// free(line);
+	// write(1, line, len);
+	free(line);
 	print_node(&com);
 	free_snode(com.arg_start);
 	line = NULL;
