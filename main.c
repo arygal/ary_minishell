@@ -363,6 +363,7 @@ char *rewrite_env(char *line, int place, char *env_val, int size)
 		newline[ct++] = line[i++];
 	newline[ct] = '\0';
 	free(line);
+	free(env_val);
 	return(newline);
 }
 
