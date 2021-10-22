@@ -6,7 +6,7 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/14 13:11:45 by megen             #+#    #+#             */
-/*   Updated: 2021/10/21 12:58:27 by megen            ###   ########.fr       */
+/*   Updated: 2021/10/22 14:46:30 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,15 +26,15 @@ typedef enum e_error
 typedef struct s_snode
 {
 	void			*value;
-	int				prev_ret;
 	struct s_snode	*next;
 	struct s_snode	*prev;
 }t_snode;
 
 typedef struct s_com
 {
-	t_snode *arg_start;
-	t_snode *arg_last;
+	int		prev_ret;
+	t_snode	*arg_start;
+	t_snode	*arg_last;
 }t_com;
 
 #endif

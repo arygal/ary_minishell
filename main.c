@@ -48,13 +48,11 @@ int get_size(char *line)
 			break;
 		if (*line == '\'' || *line == '\"')
 		{
+			if(line[1] == *line)
+				return(-1);
 			line = quote(line, &size);
 			continue ;
 		}
-		if (*line == '\\')
-			++line; //wrong segfault if '\' is last  // seems fixed
-		if (!*line)
-			break;
 		++line;
 		++size;
 	}
@@ -121,7 +119,6 @@ char *add_arg(t_com *com, char *line, int size)
 {
 	char *newline;
 	int ct;
-	bool safe;
 
 	ct = -1;
 	newline = malloc(sizeof(char) * (size + 1));
@@ -129,16 +126,10 @@ char *add_arg(t_com *com, char *line, int size)
 		return (NULL);
 	while (++ct < size)
 	{
-		safe = false;
-		if (*line == '\\')
-		{
-			safe = true;
-			++line;
-		}
-		if (!safe && (*line == '\'' || *line == '\"'))
+		if (*line == '\'' || *line == '\"')
 		{
 			line = fill_quote(line, &newline, &ct, *line);
-			continue;
+			continue ;
 		}
 		newline[ct] = *line;
 		++line;
@@ -159,6 +150,14 @@ bool parse_line(t_com *com, char *line)
 	while (*line)
 	{
 		size = get_size(line);
+		if (size == -1)
+			{
+				line += 2;
+				if (!add_snode(com, NULL))
+					return (error_proc(error_malloc));
+				line = trim_space(line);
+				continue ;
+			}
 		if (!size)
 			return(true);
 		line = add_arg(com, line, size);
@@ -189,7 +188,10 @@ void print_node(t_com *com)
 	temp = com->arg_start;
 	while (temp)
 	{
-		printf("%s\n", (char *)temp->value);
+		if (!temp->value)
+			printf("\'\'\n");
+		else	
+			printf("%s\n", (char *)temp->value);
 		temp = temp->next;
 	}
 }
@@ -240,7 +242,7 @@ char *skip_env(char *line)
 	++line;
 	while (*line)
 	{
-		if (*line == '\\' || *line == '\"' || *line == '\'' || *line == ' ' || *line == '$')
+		if (*line == '\"' || *line == '\'' || *line == ' ' || *line == '$')
 			return(line);
 		++line;
 	}
@@ -250,25 +252,16 @@ char *skip_env(char *line)
 int count_envp(char *line)
 {
 	int ret;
-	bool safe;
 
 	ret = 0;
 	while (*line)
 	{
-		safe = false;
-		if (*line == '\\')
-		{
-			safe = true;
-			++line;
-		}
-		if(!line)
-			return(ret);
-		if (!safe && *line == '\'')
+		if (*line == '\'')
 		{
 			line = quote_skip(line);
 			continue ;
 		}
-		if (!safe && *line == '$' && line[1] != '\0' && line[1] != '\\' && line[1] != ' ')
+		if (*line == '$' && line[1] != '\0' && line[1] != ' ')
 		{
 			++ret;
 			line = skip_env(line);
@@ -301,7 +294,7 @@ int size_of_envp(char *line)
 
 	ct = -1;
 	while (line[++ct])
-		if (line[ct] == '\\' || line[ct] == '\'' || line[ct] == '\"' || line[ct] == ' ')
+		if (line[ct] == '\'' || line[ct] == '\"' || line[ct] == ' ')
 			return(ct);
 	return(ct);
 }
@@ -363,11 +356,69 @@ char *rewrite_env(char *line, int place, char *env_val, int size)
 		newline[ct++] = line[i++];
 	newline[ct] = '\0';
 	free(line);
-	free(env_val);
 	return(newline);
 }
 
-char *replace_envp(char *line, int place)
+bool	ary_strcmp(char *src, char *trgt)
+{
+	if ((!src && !trgt) || (src == trgt))
+		return (true);
+	if (!src || !trgt)
+		return (false);
+	while (*src && *trgt)
+	{
+		if (*src != *trgt)
+			return (false);
+		++src;
+		++trgt;
+	}	
+	if (*src != *trgt)
+		return (false);
+	return (true);
+}
+
+static	char	*ft_itoa_charset(char *ret, long int nclone, int size, int spec)
+{
+	while (size >= 0)
+	{
+		ret[size--] = nclone % 10 + 48;
+		nclone = nclone / 10;
+	}
+	if (spec == 1)
+		ret[0] = 45;
+	return (ret);
+}
+
+char	*ft_itoa(int n)
+{
+	long int	nclone;
+	int			size;
+	char		*ret;
+
+	nclone = n;
+	size = 0;
+	while (nclone != 0)
+	{
+		nclone = nclone / 10;
+		size++;
+	}
+	if (n <= 0)
+		size++;
+	ret = malloc((size + 1) * sizeof(char));
+	if (!ret)
+		return ((void *)0);
+	ret[size] = '\0';
+	nclone = n;
+	if (nclone < 0)
+	{
+		nclone = nclone * -1;
+		return(ft_itoa_charset(ret, nclone, size - 1, 1));
+	}
+	else
+		return(ft_itoa_charset(ret, nclone, size - 1, 0));
+}
+
+char *replace_envp(char *line, int place, int prev_ret)
 {
 	int		size;
 	char	*env;
@@ -378,6 +429,13 @@ char *replace_envp(char *line, int place)
 	if (!env)
 		return(NULL);
 	fill_env(line + place + 1 , env, size);
+	if (ary_strcmp(env , "?"))
+	{
+		env_val = ft_itoa(prev_ret);
+		if (!env_val)
+			return(NULL);
+		return(rewrite_env(line, place, env_val, size + 1));
+	}
 	env_val = getenv(env);
 	if (!env_val)
 		return(remove_env(line, place, size + 1));
@@ -385,32 +443,25 @@ char *replace_envp(char *line, int place)
 		return(rewrite_env(line, place, env_val, size + 1));
 }
 
-char *envp_proc(char *line)
+char *envp_proc(char *line, int prev_ret)
 {
 	int		ct;
-	bool	safe;
 
 	ct = 0;
 	while (line[ct])
 	{
-		safe = false;
-		if (line[ct] == '\\')
-		{
-			safe = true;
-			++ct;
-		}
-		if (!safe && line[ct] == '\'')
+		if (line[ct] == '\'')
 		{
 			ct += alt_quote_skip(line + ct);
 			continue ;
 		}
-		if(!safe && line[ct] == '$' && line[ct + 1] != ' ' && line[ct + 1] != '\\' && line[ct + 1] != '\0')
-			return(replace_envp(line, ct));
+		if(line[ct] == '$' && line[ct + 1] != ' ' && line[ct + 1] != '\0')
+			return(replace_envp(line, ct, prev_ret));
 		++ct;
 	}
 }
 
-int main(int argc, char **argv, char **envp)
+int main()
 {
 	t_com com;
 	char *line;
@@ -418,37 +469,24 @@ int main(int argc, char **argv, char **envp)
 	char **args;
 	int ct;
 	int envc;
-	(void)argc;
-	(void)argv;
-
-	// char *test_line = "asd\"\\$USER ary\"test";
-	char *test_line = "\\$USER asd\"\\$USER  $ $USER\"test\'$USER asd hehe' $a $\\ asd \"\" \'\'";
-	// len = 0;
-	// while (true)
+	char *test_line = "\\$USER asd\"\\$USER  $ $USER\"test\'$USER asd hehe' $a $\\ asd $? \"\" \'\'";
 	line = ary_strdup(test_line);
 	if (!line)
 		return (-1);
-	// {
-	// ret = getline(&line, &len, stdin);
+	com.prev_ret = 0;
 	envc = count_envp(line);
 	ct = -1;
 	while (++ct < envc)
 	{
-		line = envp_proc(line);
+		line = envp_proc(line, com.prev_ret);
 		if (!line)
 			return (error_proc(error_malloc));
-		// printf("%s\n", line);
 	}
 	com.arg_start = NULL;
-	printf("%s\n", line);
-	// if (ret == -1)
-	// 	return (0);
 	parse_line(&com, line);
-	// write(1, line, len);
 	free(line);
 	print_node(&com);
 	free_snode(com.arg_start);
 	line = NULL;
-	// }
 	return (0);
 }
