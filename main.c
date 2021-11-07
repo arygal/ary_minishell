@@ -580,9 +580,11 @@ bool here_doc_input(char *limiter, t_par *par)
 			return (false);
 		if (!ret)
 			continue;
-		buffer[ret] = '\0';
+		buffer[ret - 1] = '\0';
 		if (ary_strcmp(buffer, limiter))
 			return (true);
+		buffer[ret - 1] = '\n';
+		buffer[ret] = 0;
 		if (!(add_to_par_slist(par, ary_strdup(buffer))))
 			return (false);
 		write(1, "heredoc> ", 9);
@@ -1272,7 +1274,7 @@ int main(int argc, char **argv, char **envp)
 	char **args;
 	int ct;
 	int envc;
-	char *test_line = "ls | cat -e > test12";
+	char *test_line = "cat << asd | cat -e > test12";
 
 	com.envp = envp;
 	line = ary_strdup(test_line);
