@@ -7,6 +7,12 @@ bool error_proc(int error, char *name)
 	return (false);
 }
 
+bool err_set(t_par *par, int error)
+{
+	par->error = error;
+	return (false);
+}
+
 char *trim_space(char *line)
 {
 	while (*line == ' ')
@@ -456,6 +462,7 @@ bool check_for_errors(t_com *com)
 			return (error_proc(error_syntax, node->value));
 		node = node->next;
 	}
+	return (true);
 }
 
 int count_froks(t_com *com)
@@ -612,7 +619,7 @@ t_snode *skip_par(t_snode *node)
 {
 	while (node)
 	{
-		if (ary_strcmp("|", node))
+		if (ary_strcmp("|", node->value))
 			break;
 		node = node->next;
 	}
@@ -628,17 +635,17 @@ void check_in(t_com *com)
 	par = com->par_head;
 	while (node)
 	{
-		if (ary_strcmp("|", node))
+		if (ary_strcmp("|", node->value))
 		{
 			node = node->next;
 			par = par->next;
 		}
-		if (ary_strcmp("<", node))
+		if (ary_strcmp("<", node->value))
 		{
 			node = node->next;
-			if (!access(node, F_OK))
+			if (access(node->value, F_OK))
 				par->error = error_nofile;
-			else if (!access(node, R_OK))
+			else if (access(node->value, R_OK))
 				par->error = error_noprem;
 			if (par->error)
 			{
@@ -672,7 +679,7 @@ void setup_out(t_com *com)
 	par = com->par_head;
 	while (node)
 	{
-		if (ary_strcmp("|", node))
+		if (ary_strcmp("|", node->value))
 		{
 			node = node->next;
 			par = par->next;
@@ -682,21 +689,23 @@ void setup_out(t_com *com)
 			node = skip_par(node);
 			continue;
 		}
-		if ((ary_strcmp(">>", node) || ary_strcmp(">", node)))
+		if ((ary_strcmp(">>", node->value) || ary_strcmp(">", node->value)))
 		{
 			node = node->next;
-			if (!access(node, F_OK))
+			if (access(node->value, F_OK))
+			{
 				if (!make_file(node->value) && !par->error)
 				{
 					par->error = error_create;
 					par->error_node = node;
 				}
-				else if (!access(node, W_OK))
-					if (!par->error)
-					{
-						par->error = error_noprem;
-						par->error_node = node;
-					}
+			}
+			else if (access(node->value, W_OK))
+				if (!par->error)
+				{
+					par->error = error_noprem;
+					par->error_node = node;
+				}
 			continue;
 		}
 		node = node->next;
@@ -707,16 +716,16 @@ void find_last_in(t_snode *node, t_par *par)
 {
 	while (node)
 	{
-		if (ary_strcmp("|", node))
+		if (ary_strcmp("|", node->value))
 			return;
-		if (ary_strcmp("<", node))
+		if (ary_strcmp("<", node->value))
 		{
 			node = node->next;
 			par->in_node = node;
 			par->heredoc = false;
 			continue;
 		}
-		if (ary_strcmp("<<", node))
+		if (ary_strcmp("<<", node->value))
 		{
 			node = node->next;
 			par->heredoc = true;
@@ -731,16 +740,16 @@ void find_last_out(t_snode *node, t_par *par)
 {
 	while (node)
 	{
-		if (ary_strcmp("|", node))
+		if (ary_strcmp("|", node->value))
 			return;
-		if (ary_strcmp(">", node))
+		if (ary_strcmp(">", node->value))
 		{
 			node = node->next;
 			par->append = false;
 			par->out_node = node;
 			continue;
 		}
-		if (ary_strcmp(">>", node))
+		if (ary_strcmp(">>", node->value))
 		{
 			node = node->next;
 			par->append = true;
@@ -760,7 +769,7 @@ void setup_par(t_com *com)
 	par = com->par_head;
 	while (node)
 	{
-		if (ary_strcmp("|", node))
+		if (ary_strcmp("|", node->value))
 		{
 			node = node->next;
 			par = par->next;
@@ -771,16 +780,16 @@ void setup_par(t_com *com)
 			continue;
 		}
 		find_last_in(node, par);
-		fund_last_out(node, par);
+		find_last_out(node, par);
 		node = skip_par(node);
 	}
 }
 
-bool prev_chek(node)
+bool prev_chek(t_snode *node)
 {
-	if (!node || ary_strcmp("|", node))
+	if (!node || ary_strcmp("|", node->value))
 		return (true);
-	if (ary_strcmp("<<", node) || ary_strcmp("<", node) || ary_strcmp(">>", node) || ary_strcmp(">", node))
+	if (ary_strcmp("<<", node->value) || ary_strcmp("<", node->value) || ary_strcmp(">>", node->value) || ary_strcmp(">", node->value))
 		return (false);
 	return (true);
 }
@@ -794,7 +803,7 @@ void setup_exe(t_com *com)
 	par = com->par_head;
 	while (node)
 	{
-		if (ary_strcmp("|", node))
+		if (ary_strcmp("|", node->value))
 		{
 			node = node->next;
 			par = par->next;
@@ -832,6 +841,7 @@ char *find_path(t_par *par, char **paths, char *name)
 	char *path;
 	int ct;
 
+	ct = -1;
 	while (paths[++ct])
 	{
 		path = ft_strjoin(paths[ct], name);
@@ -866,9 +876,9 @@ bool setup_path(t_com *com)
 			par = par->next;
 			continue;
 		}
-		if (access(par->exe->value, F_OK))
+		if (!access(par->exe->value, F_OK))
 		{
-			if (!access(par->exe->value, X_OK))
+			if (access(par->exe->value, X_OK))
 				par->error = error_noprem;
 			else
 			{
@@ -950,9 +960,12 @@ bool setup_argv(t_com *com)
 	t_argv_list list;
 
 	list.head = NULL;
+	par = com->par_head;
+	node = com->arg_start;
+	list.size = 0;
 	while (node)
 	{
-		if (ary_strcmp("|", node))
+		if (ary_strcmp("|", node->value))
 		{
 			node = node->next;
 			if (par->exe)
@@ -969,83 +982,89 @@ bool setup_argv(t_com *com)
 			continue;
 		}
 		if (prev_chek(node->prev))
-			if (node != par->exe)
+			if (node != par->exe && !is_com_sym(node->value))
 				if (!add_to_argv_list(&list, node->value))
 					return (false);
 		node = node->next;
 	}
-	return(true);
-}
-
-bool read_to_fd(char *name, int fd)
-{
-	char buffer[513];
-	int		name_fd;
-	int		ret;
-
-	name_fd = open(name, O_RDONLY);
-	if (name_fd < 0)
-		return(false);
-	while (true)
+	if (par->exe)
 	{
-		ret = read(name_fd, buffer, 512);
-		if (ret == 0)
-			break ;
-		if (ret < 0)
-			return(false);
-		buffer[ret] = '\0';
-		write(fd, buffer , ret);
+		par->argv = list_to_char(&list, par->exe->value);
+		if (!par->argv)
+			return (false);
 	}
-	close(name_fd);
-	return(true);
+	return (true);
 }
+
+// bool read_to_fd(char *name, int fd)
+// {
+// 	char buffer[513];
+// 	int		name_fd;
+// 	int		ret;
+
+// 	name_fd = open(name, O_RDONLY);
+// 	if (name_fd < 0)
+// 		return(false);
+// 	while (true)
+// 	{
+// 		ret = read(name_fd, buffer, 512);
+// 		if (ret == 0)
+// 			break ;
+// 		if (ret < 0)
+// 			return(false);
+// 		buffer[ret] = '\0';
+// 		write(fd, buffer , ret);
+// 	}
+// 	close(name_fd);
+// 	return(true);
+// }
 
 void here_to_fd(t_snode *head, int fd)
 {
 	while (head)
 	{
-		write(fd, head->value , ary_strlen(head->value));
+		write(fd, head->value, ary_strlen(head->value));
 		head = head->next;
 	}
 }
 
-bool fill_in_pipes(t_com *com)
-{
-	t_par	*par;
-	int		t_pipe[2];
+// bool fill_in_pipes(t_com *com)
+// {
+// 	t_par	*par;
+// 	int		t_pipe[2];
 
-	par = com->par_head;
-	while (par)
-	{
-		if (par->error || !par->in_node)
-		{
-			par = par->next;
-			continue ;
-		}
-		if (!wr_pipe(com, t_pipe))
-		{
-			if (t_pipe[0] == -1 && t_pipe[1] == -1)
-			{
-				par->error = error_open;
-				par = par->next;
-				continue ;
-			}
-			else
-				return(false);
-		}
-		if (!par->heredoc && !read_to_fd(par->in_node->value, t_pipe[1]))
-			{
-				par->error = error_open;
-				par = par->next;
-				continue ;
-			}
-		else if (par->heredoc)
-			here_to_fd(par->head, t_pipe[1]);
-		par->fd_in = t_pipe[0];
-		par = par->next;
-	}
-	
-}
+// 	par = com->par_head;
+// 	while (par)
+// 	{
+// 		if (par->error || !par->in_node)
+// 		{
+// 			par = par->next;
+// 			continue ;
+// 		}
+// 		if (!wr_pipe(com, t_pipe))
+// 		{
+// 			if (t_pipe[0] == -1 && t_pipe[1] == -1)
+// 			{
+// 				par->error = error_open;
+// 				par = par->next;
+// 				continue ;
+// 			}
+// 			else
+// 				return(false);
+// 		}
+// 		if (!par->heredoc && !read_to_fd(par->in_node->value, t_pipe[1]))
+// 			{
+// 				par->error = error_open;
+// 				par = par->next;
+// 				continue ;
+// 			}
+// 		else if (par->heredoc)
+// 			here_to_fd(par->head, t_pipe[1]);
+// 		par->fd_in = t_pipe[0];
+// 		par = par->next;
+// 	}
+
+// }
 
 bool reform_nodes(t_com *com)
 {
@@ -1071,16 +1090,132 @@ bool reform_nodes(t_com *com)
 		return (error_proc(error_malloc, NULL));
 	if (!setup_argv(com))
 		return (error_proc(error_malloc, NULL));
-	if(!fill_in_pipes(com))
-		return (error_proc(error_malloc, NULL));
-	return(true);
+	// if (!fill_in_pipes(com))
+	// 	return (error_proc(error_malloc, NULL));
+	return (true);
 }
 
-bool execute_par(par)
+bool i_o_pipework(t_com *com, t_par *par)
 {
-	
+	if (par->next && par->next->exe && !par->next->in_node)
+	{
+		if (!wr_pipe(com, com->p))
+		{
+			if (com->p[0] == -1 && com->p[1] == 1)
+				return (err_set(par, error_pipe));
+			else
+				return (err_set(par, error_malloc));
+		}
+		if (!par->out_node)
+			par->fd_out = com->p[1];
+		else
+			wr_close(com, com->p[1]);
+		par->next->fd_in = com->p[0];
+	}
+	if (par->heredoc)
+	{
+		if (!wr_pipe(com, com->p))
+		{
+			if (com->p[0] == -1 && com->p[1] == 1)
+				return (err_set(par, error_pipe));
+			else
+				return (err_set(par, error_malloc));
+		}
+		here_to_fd(par->head, com->p[1]);
+		wr_close(com, com->p[1]);
+		par->fd_in = com->p[0];
+	}
+	return (true);
 }
 
+bool i_o_setup(t_com *com, t_par *par)
+{
+	if (!i_o_pipework(com, par))
+		return (false);
+	else if (par->in_node)
+	{
+		par->fd_in = wr_open(com, par->in_node->value, O_RDONLY);
+		if (par->fd_in == -1)
+			return (err_set(par, error_open));
+		if (par->fd_in == -2)
+			return (err_set(par, error_malloc));
+	}
+	if (par->out_node)
+	{
+		if (par->append)
+			par->fd_out = wr_open(com, par->out_node->value, O_WRONLY | O_APPEND);
+		else
+			par->fd_out = wr_open(com, par->out_node->value, O_WRONLY | O_TRUNC);
+		if (par->fd_out == -1)
+			return (err_set(par, error_open));
+		if (par->fd_out == -2)
+			return (err_set(par, error_malloc));
+	}
+	return (true);
+}
+
+bool add_pid(t_com *com, int pid)
+{
+	t_pid_node *newnode;
+
+	newnode = malloc(sizeof(t_pid_node));
+	if (!newnode)
+		return (false);
+	newnode->pid = pid;
+	newnode->next = NULL;
+	if (!com->pw_list.head)
+	{
+		com->pw_list.head = newnode;
+		com->pw_list.tail = newnode;
+		return (true);
+	}
+	com->pw_list.tail->next = newnode;
+	com->pw_list.tail = newnode;
+	return (true);
+}
+
+bool execute_par(t_com *com, t_par *par)
+{
+	if (!i_o_setup(com, par))
+		return (false);
+	par->pid = fork();
+	if (par->pid < 0)
+		return (err_set(par, error_fork));
+	if (!par->pid) /*child */
+	{
+		if (par->fd_in != 0 && dup2(par->fd_in, STDIN_FILENO) == -1)
+			return (err_set(par, error_dupe)); /* dunno about child err mngmnt */ /* TODO : PROPPER ERR MNGMNT */
+		if (par->fd_out != 1 && dup2(par->fd_out, STDOUT_FILENO) == -1)
+			return (err_set(par, error_dupe));
+		close_inhereted(com, par->fd_in, par->fd_out);
+		if (execve(par->path, par->argv, com->envp) == -1)
+			return (err_set(par, error_execve));
+	}
+	else /*main */
+	{
+		if (!add_pid(com, par->pid))
+			return (err_set(par, error_malloc));
+		if (par->fd_in != 0)
+			wr_close(com, par->fd_in);
+		if (par->fd_out != 1)
+			wr_close(com, par->fd_out);
+	}
+}
+
+bool wait_all_pids(t_com *com)
+{
+	t_pid_node *node;
+
+	while (com->pw_list.head)
+	{
+		node = com->pw_list.head;
+		if (waitpid(node->pid, NULL, 0) == -1) /*maybe add som flags and shieet */
+			return (false);
+		com->pw_list.head = com->pw_list.head->next;
+		free(node);
+	}
+	return (true);
+}
 
 bool execute_pipeline(t_com *com)
 {
@@ -1091,19 +1226,42 @@ bool execute_pipeline(t_com *com)
 	{
 		if (par->error) /*  test output */
 		{
-			printf("Error nuper - %d\nError in \"%s\"\n" , par->error, par->error_node->value);
+			printf("Error num - %d\nError in \"%s\"\n", par->error, (char *)par->error_node->value);
 			par = par->next;
-			continue ;
+			continue;
 		}
 		if (!par->exe)
 		{
 			par = par->next;
-			continue ;
+			continue;
 		}
-		comexecute_par(par);
+		if (!execute_par(com, par))
+			continue;
 		par = par->next;
 	}
-	return(true);
+	if (!wait_all_pids(com))
+		return (error_proc(error_waitpid, NULL));
+	close_inhereted(com, 0, 1);
+	return (true);
+}
+
+void free_all(t_com *com)
+{
+	t_par *par;
+
+	par = com->par_head;
+	while (par->head)
+	{
+		par = com->par_head;
+		com->par_head = par->next;
+		free_snode(par->head);
+		free(par->path);
+		free(par->argv);
+		free(par);
+	}
+	free_snode(com->arg_start);
+	com->par_head = NULL;
+	com->arg_start = NULL;
 }
 
 int main(int argc, char **argv, char **envp)
@@ -1114,8 +1272,9 @@ int main(int argc, char **argv, char **envp)
 	char **args;
 	int ct;
 	int envc;
+	char *test_line = "ls | cat -e > test12";
+
 	com.envp = envp;
-	char *test_line = "";
 	line = ary_strdup(test_line);
 	if (!line || !*line)
 		return (-1);
@@ -1129,13 +1288,13 @@ int main(int argc, char **argv, char **envp)
 			return (error_proc(error_malloc, NULL));
 	}
 	com.arg_start = NULL;
+	com.pw_list.head = NULL;
+	com.inh_list.head = NULL;
 	parse_line(&com, line);
 	free(line);
 	print_node(&com);
 	reform_nodes(&com);
 	execute_pipeline(&com);
 	free_all(&com);
-	free_snode(com.arg_start);
-	line = NULL;
 	return (0);
 }

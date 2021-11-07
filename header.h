@@ -6,29 +6,36 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/14 13:11:45 by megen             #+#    #+#             */
-/*   Updated: 2021/11/06 17:42:31 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/07 16:47:06 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HEADER_H
 # define HEADER_H
 
-#include <unistd.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
+# include <unistd.h>
+# include <stdbool.h>
+# include <stdio.h>
+# include <stdlib.h>
 # include <fcntl.h>
 # include <sys/stat.h>
+# include <sys/wait.h>
+# include <sys/types.h>
 
 typedef enum e_error
 {
-	error_malloc = -6,
+	error_malloc = -12,
 	error_syntax,
 	error_nofile,
 	error_noprem,
 	error_nocom,
 	error_create,
 	error_open,
+	error_fork,
+	error_execve,
+	error_waitpid,
+	error_pipe,
+	error_dupe,
 }t_error;
 
 typedef struct s_inh_node
@@ -73,6 +80,7 @@ typedef struct s_argv_list
 
 typedef struct s_par
 {
+	int				pid;
 	int				fd_out;
 	int				fd_in;
 	int				error;
@@ -93,6 +101,7 @@ typedef struct s_par
 
 typedef struct s_com
 {
+	int			p[2];
 	int			prev_ret;
 	char		**envp;
 	t_snode		*arg_start;

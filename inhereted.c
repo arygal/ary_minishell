@@ -43,9 +43,9 @@ void	close_inhereted(t_com *cmd, int in, int out)
 	t_inh_node	*node;
 
 	if (in != 0)
-		close(in);
+		wr_close(cmd, in);
 	if (out != 1)
-		close(out);
+		wr_close(cmd, out);
 	node = cmd->inh_list.head;
 	while (node)
 	{
@@ -53,4 +53,5 @@ void	close_inhereted(t_com *cmd, int in, int out)
 			close(node->fd);
 		node = node->next;
 	}
+	cmd->inh_list.head = NULL;
 }

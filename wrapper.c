@@ -6,7 +6,7 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/06 16:48:03 by megen             #+#    #+#             */
-/*   Updated: 2021/11/06 17:13:01 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/07 13:51:02 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int	wr_open(t_com *cmd, char *name, int mode)
 	if (fd < 0)
 		return (-1);
 	if (!(add_to_inh_list(&cmd->inh_list, fd)))
-		return (-1);
+		return (-2);
 	return (fd);
 }
 
