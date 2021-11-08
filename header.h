@@ -6,7 +6,7 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/14 13:11:45 by megen             #+#    #+#             */
-/*   Updated: 2021/11/07 16:47:06 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/08 16:51:25 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,7 @@ typedef struct s_par
 	bool			append;
 	bool			heredoc;
 	bool			input_err;
+	bool			built_in;
 	char			*path;
 	char			**argv;
 	char			**envp;

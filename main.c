@@ -495,6 +495,7 @@ void init_node(t_par *newnode)
 	newnode->heredoc = false;
 	newnode->input_err = false;
 	newnode->append = false;
+	newnode->built_in = false;
 	newnode->error = 0;
 	newnode->fd_in = 0;
 	newnode->fd_out = 1;
@@ -878,6 +879,12 @@ bool setup_path(t_com *com)
 			par = par->next;
 			continue;
 		}
+		if (is_bultin()) // your func here 
+			{
+				par->built_in = true;
+				par = par->next;
+				continue ;
+			}
 		if (!access(par->exe->value, F_OK))
 		{
 			if (access(par->exe->value, X_OK))
@@ -1237,8 +1244,10 @@ bool execute_pipeline(t_com *com)
 			par = par->next;
 			continue;
 		}
-		if (!execute_par(com, par))
-			continue;
+		if (par->built_in)
+			;//your func  exec here
+		else if (!execute_par(com, par))
+			continue ;
 		par = par->next;
 	}
 	if (!wait_all_pids(com))
@@ -1270,8 +1279,6 @@ int main(int argc, char **argv, char **envp)
 {
 	t_com com;
 	char *line;
-	size_t len;
-	char **args;
 	int ct;
 	int envc;
 	char *test_line = "cat << asd | cat -e > test12";
@@ -1281,6 +1288,7 @@ int main(int argc, char **argv, char **envp)
 	if (!line || !*line)
 		return (-1);
 	com.prev_ret = 0;
+	setup_pars();
 	envc = count_envp(line);
 	ct = -1;
 	while (++ct < envc)
