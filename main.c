@@ -879,16 +879,13 @@ bool setup_path(t_com *com)
 			par = par->next;
 			continue;
 		}
-		if (is_bultin()) // your func here 
-			{
-				par->built_in = true;
-				par = par->next;
-				continue ;
-			}
-		if (!access(par->exe->value, F_OK))
+		if (!par->error && !access(par->exe->value, F_OK) )
 		{
 			if (access(par->exe->value, X_OK))
+			{
 				par->error = error_noprem;
+				continue ;
+			}
 			else
 			{
 				par->path = ary_strdup(par->exe->value);
@@ -1235,7 +1232,9 @@ bool execute_pipeline(t_com *com)
 	{
 		if (par->error) /*  test output */
 		{
-			printf("Error num - %d\nError in \"%s\"\n", par->error, (char *)par->error_node->value);
+			printf("Error num - %d\n", par->error);
+			if (par->error_node)
+				printf("Error in \"%s\"\n" , (char *)par->error_node->value);
 			par = par->next;
 			continue;
 		}
@@ -1244,8 +1243,8 @@ bool execute_pipeline(t_com *com)
 			par = par->next;
 			continue;
 		}
-		if (par->built_in)
-			;//your func  exec here
+		// if (par->built_in)
+		// 	;//your func  exec here
 		else if (!execute_par(com, par))
 			continue ;
 		par = par->next;
@@ -1281,14 +1280,14 @@ int main(int argc, char **argv, char **envp)
 	char *line;
 	int ct;
 	int envc;
-	char *test_line = "cat << asd | cat -e > test12";
+	char *test_line = "ls > asd";
 
 	com.envp = envp;
 	line = ary_strdup(test_line);
 	if (!line || !*line)
 		return (-1);
 	com.prev_ret = 0;
-	setup_pars();
+	//setup_pars();
 	envc = count_envp(line);
 	ct = -1;
 	while (++ct < envc)
