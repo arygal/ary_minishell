@@ -6,7 +6,7 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/14 13:11:45 by megen             #+#    #+#             */
-/*   Updated: 2021/11/08 16:51:25 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/13 20:11:55 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 
 typedef enum e_error
 {
-	error_malloc = -12,
+	error_malloc = -13,
 	error_syntax,
 	error_nofile,
 	error_noprem,
@@ -36,6 +36,7 @@ typedef enum e_error
 	error_waitpid,
 	error_pipe,
 	error_dupe,
+	error_ambig,
 }t_error;
 
 typedef struct s_inh_node
@@ -91,6 +92,7 @@ typedef struct s_par
 	char			*path;
 	char			**argv;
 	char			**envp;
+	char			*line;
 	t_snode			*head;
 	t_snode			*tail;
 	t_snode			*error_node;
