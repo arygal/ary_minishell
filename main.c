@@ -5,7 +5,7 @@ bool error_proc(int error, char *name)
 	(void)name;
 	printf("Err: %d\n", error);
 	if (name)
-	printf("Name: %s\n", name);
+		printf("Name: %s\n", name);
 	exit(-1);
 	return (false);
 }
@@ -170,7 +170,7 @@ bool parse_line(t_com *com, char *line)
 			line += 2;
 			newline = ary_strdup("");
 			if (!newline)
-				return(false);
+				return (false);
 			if (!add_snode(com, newline))
 				return (false);
 			line = trim_space(line);
@@ -207,7 +207,7 @@ void print_node(t_com *com)
 	while (temp)
 	{
 		if (!temp->value)
-			printf("\'\'\n");
+			printf("NULL\n");
 		else
 			printf("%s\n", (char *)temp->value);
 		temp = temp->next;
@@ -233,7 +233,7 @@ char *quote_skip(char *line)
 
 bool chek_line(char s)
 {
-	if (s == '-' || s == '*' || s == '$' || s == '@' || s == '_' || s == '#' ||
+	if (s == '-' || s == '?' || s == '*' || s == '$' || s == '@' || s == '_' || s == '#' ||
 		s == '!' || (s >= '0' && s <= '9') || (s > 64 && s < 91) || (s > 96 && s < 123))
 		return (true);
 	return (false);
@@ -242,27 +242,27 @@ bool chek_line(char s)
 bool chek_back(char *line, char *base)
 {
 	if (line == base)
-		return(true);
+		return (true);
 	--line;
 	while (line != base)
 	{
-		if(*line == ' ' || *line =='	')
+		if (*line == ' ' || *line == '	')
 		{
 			--line;
-			continue ;
+			continue;
 		}
 		if (*line != '<')
-			return(true);
+			return (true);
 		else
 		{
 			--line;
 			if (*line == '<')
-				return(false);
+				return (false);
 			else
-				return(true);
+				return (true);
 		}
 	}
-	return(true);
+	return (true);
 }
 
 int count_envp(char *line)
@@ -307,7 +307,7 @@ int size_of_envp(char *line)
 	int ct;
 
 	ct = -1;
-	if (*line == '-' || *line == '*' || *line == '$' || *line == '@' || *line == '_' || *line == '#' || *line == '!' || (*line >= '0' && *line <= '9'))
+	if (*line == '-' || *line == '?' || *line == '*' || *line == '$' || *line == '@' || *line == '_' || *line == '#' || *line == '!' || (*line >= '0' && *line <= '9'))
 		return (1);
 	while (line[++ct])
 		if (!(line[ct] > 64 && line[ct] < 91) && !(line[ct] > 96 && line[ct] < 123))
@@ -328,17 +328,17 @@ void fill_env(char *line, char *env, int size)
 void chek_ambig(char *line, int place, t_par *par)
 {
 	if (place == 0)
-		return ;
+		return;
 	--place;
 	while (place > 0)
 	{
 		if (line[place] == ' ' || line[place] == '	')
 		{
 			--place;
-			continue ;
+			continue;
 		}
 		else
-			break ;
+			break;
 	}
 	if (line[place] == '<' && (place - 1) != 0 && line[place - 1] != '<')
 		par->error = error_ambig;
@@ -346,7 +346,7 @@ void chek_ambig(char *line, int place, t_par *par)
 		par->error = error_ambig;
 }
 
-bool add_ambig_node(char *line,int place,int size,t_par *par)
+bool add_ambig_node(char *line, int place, int size, t_par *par)
 {
 	char *newline;
 	t_snode *newnode;
@@ -354,20 +354,20 @@ bool add_ambig_node(char *line,int place,int size,t_par *par)
 
 	newline = malloc(sizeof(char) * (size + 1));
 	if (!newline)
-		return(false);
+		return (false);
 	ct = -1;
 	while (++ct < size)
 		newline[ct] = line[place + ct];
 	newline[ct] = '\0';
 	newnode = malloc(sizeof(t_snode));
-	if(!newnode)
+	if (!newnode)
 	{
 		free(newline);
-		return(false);
+		return (false);
 	}
 	newnode->value = newline;
 	par->error_node = newnode;
-	return(true);
+	return (true);
 }
 
 char *remove_env(char *line, int place, int size, t_par *par)
@@ -380,8 +380,8 @@ char *remove_env(char *line, int place, int size, t_par *par)
 	if (par->error == error_ambig)
 	{
 		if (!add_ambig_node(line, place, size, par))
-			return(NULL);
-		return(line);
+			return (NULL);
+		return (line);
 	}
 	len = ary_strlen(line) - size;
 	newline = malloc(sizeof(char) * (len + 1));
@@ -487,6 +487,7 @@ char *replace_envp(char *line, int place, int prev_ret, t_par *par)
 		return (rewrite_env(line, place, env_val, size + 1));
 	}
 	env_val = getenv(env);
+	free(env);
 	if (!env_val)
 		return (remove_env(line, place, size + 1, par));
 	else
@@ -901,7 +902,7 @@ void setup_exe(t_com *com)
 			node = skip_par(node);
 			continue;
 		}
-		if (prev_chek(node->prev))
+		if (prev_chek(node->prev) && node->value)
 		{
 			par->exe = node;
 			node = skip_par(node);
@@ -965,12 +966,12 @@ bool setup_path(t_com *com)
 			par = par->next;
 			continue;
 		}
-		if (!par->error && !access(par->exe->value, F_OK) )
+		if (!par->error && !access(par->exe->value, F_OK))
 		{
 			if (access(par->exe->value, X_OK))
 			{
 				par->error = error_noprem;
-				continue ;
+				continue;
 			}
 			else
 			{
@@ -1189,7 +1190,7 @@ bool reform_nodes(t_com *com)
 
 bool i_o_pipework(t_com *com, t_par *par)
 {
-	if (par->next && par->next->exe && !par->next->in_node)
+	if (par->next)
 	{
 		if (!wr_pipe(com, com->p))
 		{
@@ -1303,6 +1304,10 @@ bool wait_all_pids(t_com *com)
 		node = com->pw_list.head;
 		if (waitpid(node->pid, NULL, 0) == -1) /*maybe add som flags and shieet */
 			return (false);
+		if (WIFEXITED(node->pid))
+			com->prev_ret = WIFEXITED(node->pid);
+		else
+			com->prev_ret = 0;
 		com->pw_list.head = com->pw_list.head->next;
 		free(node);
 	}
@@ -1320,19 +1325,31 @@ bool execute_pipeline(t_com *com)
 		{
 			printf("Error num - %d\n", par->error);
 			if (par->error_node)
-				printf("Error in \"%s\"\n" , (char *)par->error_node->value);
+				printf("Error in \"%s\"\n", (char *)par->error_node->value);
 			par = par->next;
 			continue;
 		}
 		if (!par->exe)
 		{
+			if (par->next && !par->next->in_node)
+			{
+				if (!wr_pipe(com, com->p))
+				{
+					if (com->p[0] == -1 && com->p[1] == 1)
+						return (err_set(par, error_pipe));
+					else
+						return (err_set(par, error_malloc));
+				}
+				wr_close(com, com->p[1]);
+				par->next->fd_in = com->p[0];
+			}
 			par = par->next;
 			continue;
 		}
 		// if (par->built_in)
 		// 	;//your func  exec here
 		else if (!execute_par(com, par))
-			continue ;
+			continue;
 		par = par->next;
 	}
 	if (!wait_all_pids(com))
@@ -1345,15 +1362,16 @@ void free_all(t_com *com)
 {
 	t_par *par;
 
-	par = com->par_head;
-	while (par->head)
+	while (com->par_head)
 	{
 		par = com->par_head;
 		com->par_head = par->next;
-		free_snode(par->head);
+		if (par->head)
+			free_snode(par->head);
 		free(par->path);
 		free(par->argv);
-		if(par->error == error_ambig)
+		free(par->line);
+		if (par->error == error_ambig)
 		{
 			free(par->error_node->value);
 			free(par->error_node);
@@ -1373,37 +1391,36 @@ char *sq_qutes(char *line)
 	spec = *line;
 	++line;
 	start = line;
-	if(!*line)
-		return(line);
-	while(*line)
+	if (!*line)
+		return (line);
+	while (*line)
 	{
 		if (*line = spec)
-			return(++line);
+			return (++line);
 		++line;
 	}
-	return(start);
-	
+	return (start);
 }
 
 bool line_to_par(t_com *com, char *line)
 {
 	if (*line)
 		if (!add_par_node(com))
-			return(false);
+			return (false);
 	while (*line)
 	{
 		line = trim_space(line);
 		if (*line == '\'' || *line == '\"')
 		{
 			line = sq_qutes(line);
-			continue ;
+			continue;
 		}
 		if (*line == '|')
 			if (!add_par_node(com))
-				return(false);
+				return (false);
 		++line;
 	}
-	return(true);
+	return (true);
 }
 
 int qute_size(char *line)
@@ -1417,11 +1434,11 @@ int qute_size(char *line)
 	while (*line)
 	{
 		if (*line == spec)
-			return(++size);
+			return (++size);
 		++size;
 		++line;
 	}
-	return(1);
+	return (1);
 }
 
 int line_size(char *line)
@@ -1432,19 +1449,19 @@ int line_size(char *line)
 	size = 0;
 	while (*line)
 	{
-		if(*line == '\'' || *line == '\"')
+		if (*line == '\'' || *line == '\"')
 		{
 			quote = qute_size(line);
 			size += quote;
 			line += quote;
-			continue ;
+			continue;
 		}
-		if(*line == '|')
-			return(size);
+		if (*line == '|')
+			return (size);
 		++size;
 		++line;
 	}
-	return(size);	
+	return (size);
 }
 
 void fill_line(char *newline, char *line, int size)
@@ -1475,7 +1492,16 @@ bool split_line_to_pars(t_com *com, char *line)
 		line += size + 1; // +1????
 		par = par->next;
 	}
-	return(true);
+	return (true);
+}
+
+bool chek_empty(char *line)
+{
+	line = trim_space(line);
+	if (!*line)
+		return (true);
+	else
+		return (false);
 }
 
 bool par_envp(t_com *com)
@@ -1491,10 +1517,10 @@ bool par_envp(t_com *com)
 		ct = -1;
 		while (++ct < envc)
 		{
-			par->line = envp_proc(par->line, com->prev_ret , par);
+			par->line = envp_proc(par->line, com->prev_ret, par);
 			if (!par->line)
 				return (false);
-			if(!*par->line)
+			if (chek_empty(par->line))
 			{
 				free(par->line);
 				par->line = NULL;
@@ -1502,43 +1528,42 @@ bool par_envp(t_com *com)
 		}
 		par = par->next;
 	}
-	return(true);
+	return (true);
 }
 
 bool par_to_parse(t_com *com)
 {
-	t_par	*par;
-	char	*duct;
+	t_par *par;
+	char *duct;
 
 	par = com->par_head;
 	while (par)
 	{
-		if(!par->line)
+		if (!par->line)
 		{
 			if (!add_snode(com, NULL))
-				return(error_proc(error_malloc, NULL));
+				return (error_proc(error_malloc, NULL));
 		}
-		if (!parse_line(com, par->line))
-			return(error_proc(error_malloc, NULL));
-		if(par->next)
-			{
-				duct = ary_strdup("|");
-				if (!duct)
-					return(error_proc(error_malloc, NULL));
-				if (!add_snode(com, duct))
-					return(error_proc(error_malloc, NULL));
-			}
+		else if (!parse_line(com, par->line))
+			return (error_proc(error_malloc, NULL));
+		if (par->next)
+		{
+			duct = ary_strdup("|");
+			if (!duct)
+				return (error_proc(error_malloc, NULL));
+			if (!add_snode(com, duct))
+				return (error_proc(error_malloc, NULL));
+		}
 		par = par->next;
 	}
-	return(true);
+	return (true);
 }
-
 
 int main(int argc, char **argv, char **envp)
 {
 	t_com com;
 	char *line;
-	char *test_line = "ls > $sad | ls";
+	char *test_line = "ls | $asd | cat";
 
 	com.arg_start = NULL;
 	com.pw_list.head = NULL;
@@ -1551,7 +1576,7 @@ int main(int argc, char **argv, char **envp)
 	com.prev_ret = 0;
 	if (!line_to_par(&com, line))
 		return (error_proc(error_malloc, NULL));
-	if(!split_line_to_pars(&com, line))
+	if (!split_line_to_pars(&com, line))
 		return (error_proc(error_malloc, NULL));
 	if (!par_envp(&com))
 		return (error_proc(error_malloc, NULL));
