@@ -6,7 +6,7 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/14 13:11:45 by megen             #+#    #+#             */
-/*   Updated: 2021/11/18 13:21:59 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/18 19:05:54 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,17 +65,30 @@ void	com_init(t_com *com)
 	com->syntax = 0;
 }
 
+bool empty_line(char *line)
+{
+	char *base;
+
+	base = line;
+	line = trim_space(line);
+	if(!*line)
+	{
+		free(base);
+		/*тут фришиш что маллочил до этого */
+		return(true);
+	}
+	return(false);
+}
+
 int	parser_ary(t_com *com, char *line)
 {
-	printf("3333\n");
 	com->envp = extractEnvp(g_conf.envp);
-	printf("4444\n");
 	com->ac = countArgc(com);
-	printf("1333\n");
 	com->av = listToArgv(com);
-	printf("11444\n");
-	if (!line || !*line)
+	if (!line)
 		return (0);
+	if (empty_line(line))
+		return(0);
 	if (!syntax_err(com, line))
 		return (write(1, "SINTAX\n", 7));
 	/*SYNTAX ERROR HERE => TOKEN IN COM->SYNTAX*/
@@ -87,7 +100,11 @@ int	parser_ary(t_com *com, char *line)
 		handleErrors(NULL, false, error_malloc);
 	free(line);
 	par_to_parse(com);
-	reform_nodes(com);
+	if (!reform_nodes(com) && com->term)
+	{
+		free_all(com, com->par_head);
+		return(0);
+	}
 	execute_pipeline(com, com->par_head);
 	wait_all_pids(com);
 	close_inhereted(com, 0, 1);

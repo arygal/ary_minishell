@@ -6,7 +6,7 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/18 09:48:07 by megen             #+#    #+#             */
-/*   Updated: 2021/11/18 12:43:18 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/18 19:07:31 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,11 @@ static bool	here_doc_start(t_com *com, char *lim, t_par *par)
 	{
 		wr_close(com, com->p[1]);
 		waitpid(pid, NULL, 0);
+		// if (ctrl + C)
+			{
+				com->term = true;
+				return(false);
+			}
 	}
 	return (true);
 }
@@ -69,6 +74,7 @@ bool	here_doc(t_com *com)
 
 	node = com->arg_start;
 	par = com->par_head;
+	com->term = false;
 	while (node)
 	{
 		if (ary_strcmp("|", node->value))

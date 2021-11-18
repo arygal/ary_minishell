@@ -6,7 +6,7 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/18 07:00:07 by megen             #+#    #+#             */
-/*   Updated: 2021/11/18 12:50:44 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/18 19:07:35 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,9 @@ bool	reform_nodes(t_com *com)
 	list.head = NULL;
 	list.size = 0;
 	size = 0;
-	here_doc(com);
+	if (!here_doc(com))
+		if(com->term)
+			return(false);
 	check_in(com, com->arg_start, com->par_head);
 	setup_out(com, com->arg_start, com->par_head);
 	setup_par(com);

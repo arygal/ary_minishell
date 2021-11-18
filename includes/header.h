@@ -6,7 +6,7 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/14 13:11:45 by megen             #+#    #+#             */
-/*   Updated: 2021/11/18 13:10:58 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/18 18:52:53 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ typedef struct s_par
 	t_snode			*in_node;
 	t_snode			*exe;
 	struct s_par	*next;	
-}	t_par;
+}t_par;
 
 typedef struct s_com
 {
@@ -115,6 +115,7 @@ typedef struct s_com
 	t_inh_list	inh_list;
 	s_pw_list	pw_list;
 	int			syntax;
+	bool		term;
 	int			ac;
 	char		**av;
 }	t_com;
@@ -234,6 +235,5 @@ bool	syntax_err(t_com *com, char *line);
 /*		here_doc.c */
 
 bool	here_doc(t_com *com);
-
 
 #endif
