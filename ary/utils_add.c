@@ -6,11 +6,11 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/06 14:39:15 by megen             #+#    #+#             */
-/*   Updated: 2021/11/06 14:40:29 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/18 13:15:49 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "header.h"
+#include "../includes/header.h"
 
 /* utility func for split */
 
@@ -87,7 +87,7 @@ static char	*ft_split_filler(char const *s, char c, size_t nc, size_t size)
 
 /* splits str by char c and return 2D array */
 
-char	**ft_split(char const *s, char c)
+char	**ft_split_ary(char const *s, char c)
 {
 	size_t	wct;
 	size_t	nc;

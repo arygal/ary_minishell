@@ -6,41 +6,17 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/06 14:39:33 by megen             #+#    #+#             */
-/*   Updated: 2021/11/06 14:39:37 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/18 13:16:31 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "header.h"
-
-/* makes new str and copies content of two strings in it */
-
-char	*ft_strjoin(char *s1, char *s2)
-{
-	size_t	a;
-	size_t	b;
-	size_t	ct;
-	char	*ret;
-
-	a = ary_strlen(s1);
-	b = ary_strlen(s2);
-	ret = malloc(a + b + 1);
-	if (!ret)
-		return ((void *)0);
-	ct = -1;
-	while (++ct < a)
-		ret[ct] = s1[ct];
-	ct = -1;
-	while (++ct < b)
-		ret[a + ct] = s2[ct];
-	ret[a + ct] = '\0';
-	return (ret);
-}
+#include "../includes/header.h"
 
 /* strlen */
 
-int ary_strlen(char *s)
+int	ary_strlen(char *s)
 {
-	int ct;
+	int	ct;
 
 	ct = -1;
 	while (s[++ct])
@@ -50,10 +26,10 @@ int ary_strlen(char *s)
 
 /* strdup */
 
-char *ary_strdup(char *src)
+char	*ary_strdup(char *src)
 {
-	char *ret;
-	int len;
+	char	*ret;
+	int		len;
 
 	len = ary_strlen(src);
 	ret = malloc(sizeof(char) * ++len);
@@ -81,5 +57,27 @@ bool	ary_strcmp(char *src, char *trgt)
 	}	
 	if (*src != *trgt)
 		return (false);
+	return (true);
+}
+
+/* also tabs....lol */
+
+char	*trim_space(char *line)
+{
+	while (*line == ' ' || *line == '	')
+		++line;
+	return (line);
+}
+
+/* what did it do? */
+
+int	make_file(char *name)
+{
+	int	fd;
+
+	fd = open(name, O_CREAT, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
+	if (fd < 0)
+		return (false);
+	close(fd);
 	return (true);
 }
