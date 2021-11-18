@@ -85,5 +85,3 @@ void	handleErrors(t_par *par, bool ispath, int errno_)
 		g_conf.status = pError(par->argv[0], NULL, "command not found", 127);
 //		exit(pError(par->argv[0], NULL, "command not found", 127));
 }
-
-//TODO handle error with ';'

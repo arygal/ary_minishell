@@ -12,26 +12,13 @@
 
 #include "../includes/minishell.h"
 
-int	action(char *line)
-{
-	int		code;
-
-
-	code = parser_ary(g_conf.com, line);
-
-//	print_node(&com);
-
-//	if (com.ac > 0 && isBuiltin((char *)com.arg_start->value))
-//		return (execBuiltin(&com));
-//	else if (com.ac > 0)
-//		runCmd(&com);
-	return (0);
-}
-
 char	*readLine(void)
 {
 	char	*line;
+	int		rl_catch_signals;
 
+	rl_catch_signals = 0;
+	rl_set_signals();
 	defineInputSignals();
 //	line = readline(g_conf.prompt);
 	line = readline("minishell $ ");
@@ -44,17 +31,10 @@ char	*readLine(void)
 //	TODO:	free(cmdLine);
 void	mainLoop(char **env)
 {
-//	t_cmdLine	*cmdLine;
 	char		*line;
-	int			code;
-	t_com	com;
+	t_com		com;
 
 	g_conf.com = &com;
-
-
-//	cmdLine = malloc(sizeof(t_cmdLine));
-//	if (!cmdLine)
-//		exit (1);
 	while (true)
 	{
 		line = readLine();
@@ -69,8 +49,6 @@ void	mainLoop(char **env)
 				write(2, "exit\n", 5);
 			break ;
 		}
-//		cmdLine = microParser(cmdLine, line);
-//		runCommand(cmdLine);
-		action(line);
+		parser_ary(&com, line);
 	}
 }

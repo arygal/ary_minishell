@@ -15,14 +15,15 @@
 bool	wait_all_pids(t_com *com)
 {
 	t_pid_node	*node;
+	int			status;
 
 	while (com->pw_list.head)
 	{
 		node = com->pw_list.head;
-		if (waitpid(node->pid, NULL, 0) == -1)
+		if (waitpid(node->pid, &status, 0) == -1)
 			return (false);
-		if (WIFEXITED(node->pid))
-			com->prev_ret = WIFEXITED(node->pid);
+		if (WIFEXITED(status))
+			com->prev_ret = WEXITSTATUS(status);
 		com->pw_list.head = com->pw_list.head->next;
 		free(node);
 	}

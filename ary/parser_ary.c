@@ -6,12 +6,11 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/14 13:11:45 by megen             #+#    #+#             */
-/*   Updated: 2021/11/18 19:05:54 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/18 21:51:41 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-#include "../includes/header.h"
 
 int	countArgc(t_com *com)
 {
@@ -23,7 +22,8 @@ int	countArgc(t_com *com)
 	while (head)
 	{
 		++ac;
-		head = head->next;
+		if (head)
+			head = head->next;
 	}
 	return (ac);
 }
@@ -65,32 +65,21 @@ void	com_init(t_com *com)
 	com->syntax = 0;
 }
 
-bool empty_line(char *line)
-{
-	char *base;
-
-	base = line;
-	line = trim_space(line);
-	if(!*line)
-	{
-		free(base);
-		/*тут фришиш что маллочил до этого */
-		return(true);
-	}
-	return(false);
-}
-
 int	parser_ary(t_com *com, char *line)
 {
+	com_init(com);
 	com->envp = extractEnvp(g_conf.envp);
 	com->ac = countArgc(com);
 	com->av = listToArgv(com);
-	if (!line)
+//	printf("11444\n");
+	if (!line || !*line)
 		return (0);
 	if (empty_line(line))
 		return(0);
 	if (!syntax_err(com, line))
-		return (write(1, "SINTAX\n", 7));
+//		return (write(1, "SINTAX\n", 7));
+		return (syntaxError("syntax error near unexpected token ",
+						NULL, line, 258));
 	/*SYNTAX ERROR HERE => TOKEN IN COM->SYNTAX*/
 	if (!line_to_par(com, line))
 		handleErrors(NULL, false, error_malloc);
@@ -105,9 +94,12 @@ int	parser_ary(t_com *com, char *line)
 		free_all(com, com->par_head);
 		return(0);
 	}
-	execute_pipeline(com, com->par_head);
+	execute_pipeline(com, com->par_head); // зануляет $? heredoc
+
 	wait_all_pids(com);
 	close_inhereted(com, 0, 1);
+
 	free_all(com, com->par_head);
+
 	return (0);
 }

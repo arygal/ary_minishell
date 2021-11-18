@@ -98,7 +98,7 @@ void	setup_out(t_com *com, t_snode *node, t_par *par)
 			node = node->next;
 			par = par->next;
 		}
-		if (par->input_err || par->error == error_ambig)
+		if (par && (par->input_err || par->error == error_ambig))
 		{
 			node = skip_par(node);
 			continue ;

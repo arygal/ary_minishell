@@ -78,7 +78,7 @@ static void	redisplayPrompt(int signal)
 //	printf("Hi from redisplayPrompt - 1\n");
 
 	(void)signal;
-	g_conf.com->prev_ret = 130;
+	g_conf.com->prev_ret = 1;
 	write(1, "\n", 1);
 	rl_replace_line("", 0);
 	rl_on_new_line();

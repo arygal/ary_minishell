@@ -77,18 +77,18 @@ bool	setup_argv(t_com *com, t_snode *node, t_par *par, t_argv_list *list)
 				return (false);
 			par = par->next;
 		}
-		if (par->error)
+		if (par && par->error)
 		{
 			node = skip_par(node);
 			continue ;
 		}
-		if (prev_chek(node->prev))
+		if (par && prev_chek(node->prev))
 			if (node != par->exe && !is_com_sym(node->value))
 				if (!add_to_argv_list(list, node->value))
 					return (false);
 		node = node->next;
 	}
-	if (par->exe && !argv_duct(par, list))
+	if (par && par->exe && !argv_duct(par, list))
 		return (false);
 	return (true);
 }

@@ -19,6 +19,7 @@
 # include <readline/history.h>
 # include <errno.h>
 # include <sys/wait.h>
+# include <string.h>
 # include "func.h"
 # include "builtin.h"
 # include "lexer.h"

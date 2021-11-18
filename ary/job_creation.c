@@ -6,7 +6,7 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/18 07:00:07 by megen             #+#    #+#             */
-/*   Updated: 2021/11/18 19:07:35 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/18 21:06:00 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ static void	setup_par(t_com *com)
 			node = node->next;
 			par = par->next;
 		}
-		if (par->error)
+		if (par && par->error)
 		{
 			node = skip_par(node);
 			continue ;
@@ -75,12 +75,12 @@ static void	setup_exe(t_com *com, t_snode *node, t_par *par)
 			node = node->next;
 			par = par->next;
 		}
-		if (par->error)
+		if (par && par->error)
 		{
 			node = skip_par(node);
 			continue ;
 		}
-		if (prev_chek(node->prev) && node->value)
+		if (par && prev_chek(node->prev) && node->value)
 		{
 			par->exe = node;
 			node = skip_par(node);
@@ -100,8 +100,7 @@ bool	reform_nodes(t_com *com)
 	list.size = 0;
 	size = 0;
 	if (!here_doc(com))
-		if(com->term)
-			return(false);
+		return(false);
 	check_in(com, com->arg_start, com->par_head);
 	setup_out(com, com->arg_start, com->par_head);
 	setup_par(com);

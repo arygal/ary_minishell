@@ -112,3 +112,17 @@ char	**ft_split_ary(char const *s, char c)
 	ret[nc] = (void *)0;
 	return (ret);
 }
+
+bool empty_line(char *line)
+{
+	char *base;
+	base = line;
+	line = trim_space(line);
+	if(!*line)
+	{
+		free(base);
+		/*тут фришиш что маллочил до этого */
+		return(true);
+	}
+	return(false);
+}

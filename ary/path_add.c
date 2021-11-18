@@ -13,7 +13,7 @@
 #include "../includes/header.h"
 #include "../includes/minishell.h"
 
-bool	tape_it(int ct, char **paths, char *name, char *path)
+bool	tape_it(int ct, char **paths, char *name, char **path)
 {
 	char	*temp;
 
@@ -22,7 +22,7 @@ bool	tape_it(int ct, char **paths, char *name, char *path)
 	if (!paths[ct])
 		return (false);
 	free(temp);
-	path = ft_strjoin(paths[ct], name);
+	*path = ft_strjoin(paths[ct], name);
 	if (!path)
 		return (false);
 	return (true);

@@ -32,7 +32,7 @@ static char	*find_path(t_par *par, char **paths, char *name, int ct)
 
 	while (paths[++ct])
 	{
-		if (!tape_it(ct, paths, name, path))
+		if (!tape_it(ct, paths, name, &path))
 			return (NULL);
 		if (!(access(path, F_OK)))
 		{
@@ -84,6 +84,12 @@ bool	setup_path(t_com *com, t_par *par)
 	{
 		if (!par->exe)
 		{
+			par = par->next;
+			continue ;
+		}
+		if (isBuiltin((char *)par->exe->value)) // your func here
+		{
+			par->built_in = true;
 			par = par->next;
 			continue ;
 		}

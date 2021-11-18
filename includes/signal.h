@@ -18,5 +18,6 @@
 void	defineInputSignals(void);
 void	defineExecSignals(void);
 void	interruptHereDoc(int signal);
+int		rl_set_signals(void);
 
 #endif

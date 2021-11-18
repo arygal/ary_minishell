@@ -6,14 +6,26 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/18 09:48:07 by megen             #+#    #+#             */
-/*   Updated: 2021/11/18 19:07:31 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/18 21:58:49 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/header.h"
+#include "../includes/minishell.h"
 
 static bool	here_doc_input(t_com *com, char *limiter, t_par *par)
 {
+//	char	*buffer;
+//
+//	while (true)
+//	{
+//		buffer = readline("> ");
+//		if (ary_strcmp(buffer, limiter))
+//			return (true);
+//		buffer[ft_strlen(buffer)] = '\n';
+//		write(com->p[1], buffer, ft_strlen(buffer));
+//		free(buffer);
+//	}
+
 	char	buffer[512];
 	int		ret;
 
@@ -24,10 +36,13 @@ static bool	here_doc_input(t_com *com, char *limiter, t_par *par)
 		if (ret < 0)
 			return (false);
 		if (!ret)
+		{
+			write(1, "\n", 1);
 			return (true);
+		}
 		buffer[ret - 1] = '\0';
 		if (ary_strcmp(buffer, limiter))
-			return (true);
+			return (0);
 		buffer[ret - 1] = '\n';
 		buffer[ret] = '\0';
 		write(com->p[1], buffer, ret);
@@ -35,10 +50,13 @@ static bool	here_doc_input(t_com *com, char *limiter, t_par *par)
 	}
 }
 
+
 static bool	here_doc_start(t_com *com, char *lim, t_par *par)
 {
 	int	pid;
+	int	status;
 
+	status = 0;
 	if (!wr_pipe(com, com->p))
 		return (false);
 	if (par->fd_hd)
@@ -50,6 +68,7 @@ static bool	here_doc_start(t_com *com, char *lim, t_par *par)
 	if (!pid)
 	{
 		wr_close(com, com->p[0]);
+		signal(SIGINT, interruptHereDoc);
 		here_doc_input(com, lim, par);
 		wr_close(com, com->p[1]);
 		exit(0);
@@ -57,12 +76,21 @@ static bool	here_doc_start(t_com *com, char *lim, t_par *par)
 	else
 	{
 		wr_close(com, com->p[1]);
-		waitpid(pid, NULL, 0);
-		// if (ctrl + C)
-			{
-				com->term = true;
-				return(false);
-			}
+
+		waitpid(pid, &status, 0);
+
+		if (WIFEXITED(status) && WEXITSTATUS(status) == 130)
+		{
+//			clearHeredocInput();
+//			wr_close(com, com->p[0]);
+//			printf("err0r2 = %d\n", g_conf.com->prev_ret);
+//
+//			g_conf.com->prev_ret = 130;
+//			par->fd_hd = 0;
+			com->term = true;
+			return(false);
+		}
+		printf("err0r3 = %d\n", g_conf.com->prev_ret);
 	}
 	return (true);
 }
@@ -75,6 +103,7 @@ bool	here_doc(t_com *com)
 	node = com->arg_start;
 	par = com->par_head;
 	com->term = false;
+	node = com->arg_start;
 	while (node)
 	{
 		if (ary_strcmp("|", node->value))
@@ -88,6 +117,7 @@ bool	here_doc(t_com *com)
 				return (false);
 			par->heredoc = true;
 			node = node->next;
+			continue ;
 		}
 		node = node->next;
 	}

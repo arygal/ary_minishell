@@ -6,7 +6,7 @@
 #    By: megen <marvin@42.fr>                       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/10/11 16:41:57 by maearly           #+#    #+#              #
-#    Updated: 2021/11/18 13:17:14 by megen            ###   ########.fr        #
+#    Updated: 2021/11/18 20:59:38 by megen            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -53,7 +53,7 @@ LIST		=	srcs/main.c												\
 
 LRL			=	-lreadline
 
-# LDFLAGS		=	-L
+# LDFLAGS		=	-L/Users/maearly/.brew/Cellar/readline/8.1.1/lib
 
 # CPPFLAGS	=	-I/Users/maearly/.brew/Cellar/readline/8.1.1/include
 
