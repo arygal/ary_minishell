@@ -6,7 +6,7 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/18 07:00:07 by megen             #+#    #+#             */
-/*   Updated: 2021/11/18 21:06:00 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/18 22:35:52 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ static void	setup_exe(t_com *com, t_snode *node, t_par *par)
 			node = skip_par(node);
 			continue ;
 		}
-		if (par && prev_chek(node->prev) && node->value)
+		if (par && prev_chek(node->prev) && node->value && !is_com_node(node->value))
 		{
 			par->exe = node;
 			node = skip_par(node);

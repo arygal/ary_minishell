@@ -6,7 +6,7 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/14 13:11:45 by megen             #+#    #+#             */
-/*   Updated: 2021/11/18 13:10:58 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/18 22:34:26 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,6 +202,7 @@ bool	reform_nodes(t_com *com);
 void	find_last_in(t_snode *node, t_par *par);
 void	find_last_out(t_snode *node, t_par *par);
 bool	prev_chek(t_snode *node);
+bool	is_com_node(char *line);
 
 /*		path.c */
 

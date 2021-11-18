@@ -6,7 +6,7 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/18 07:15:44 by megen             #+#    #+#             */
-/*   Updated: 2021/11/18 12:51:41 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/18 22:33:57 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,4 +68,19 @@ bool	prev_chek(t_snode *node)
 		|| ary_strcmp(">>", node->value) || ary_strcmp(">", node->value))
 		return (false);
 	return (true);
+}
+
+bool	is_com_node(char *line)
+{
+	if (ary_strcmp("|", line))
+		return (true);
+	if (ary_strcmp(">>", line))
+		return (true);
+	if (ary_strcmp(">", line))
+		return (true);
+	if (ary_strcmp("<<", line))
+		return (true);
+	if (ary_strcmp("<", line))
+		return (true);
+	return (false);
 }

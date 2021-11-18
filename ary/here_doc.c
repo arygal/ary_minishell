@@ -6,7 +6,7 @@
 /*   By: megen <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/18 09:48:07 by megen             #+#    #+#             */
-/*   Updated: 2021/11/18 21:58:49 by megen            ###   ########.fr       */
+/*   Updated: 2021/11/18 22:11:07 by megen            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,12 +81,6 @@ static bool	here_doc_start(t_com *com, char *lim, t_par *par)
 
 		if (WIFEXITED(status) && WEXITSTATUS(status) == 130)
 		{
-//			clearHeredocInput();
-//			wr_close(com, com->p[0]);
-//			printf("err0r2 = %d\n", g_conf.com->prev_ret);
-//
-//			g_conf.com->prev_ret = 130;
-//			par->fd_hd = 0;
 			com->term = true;
 			return(false);
 		}
